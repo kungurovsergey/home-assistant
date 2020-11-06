@@ -23,6 +23,7 @@ from homeassistant.util import slugify
 
 from .const import (
     ATTR_TORRENT,
+    ATTR_DOWNLOAD_DIR,
     DEFAULT_NAME,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
@@ -34,7 +35,8 @@ from .errors import AuthenticationError, CannotConnect, UnknownError
 _LOGGER = logging.getLogger(__name__)
 
 
-SERVICE_ADD_TORRENT_SCHEMA = vol.Schema({vol.Required(ATTR_TORRENT): cv.string})
+SERVICE_ADD_TORRENT_SCHEMA = vol.Schema({vol.Required(ATTR_TORRENT): cv.string,
+    vol.Optional(ATTR_DOWNLOAD_DIR, default="") : cv.string})
 
 TRANS_SCHEMA = vol.All(
     vol.Schema(
@@ -168,13 +170,17 @@ class TransmissionClient:
         def add_torrent(service):
             """Add new torrent to download."""
             torrent = service.data[ATTR_TORRENT]
+            torrent_dir = service.data[ATTR_DOWNLOAD_DIR]
             if torrent.startswith(
                 ("http", "ftp:", "magnet:")
             ) or self.hass.config.is_allowed_path(torrent):
-                api.add_torrent(torrent)
+                if (not torrent_dir):
+                    api.add_torrent(torrent)
+                else:
+                    api.add_torrent(torrent, download_dir = torrent_dir)
             else:
                 _LOGGER.warning(
-                    "Could not add torrent: unsupported type or no permission"
+                    "Could not add torrent: unsupported type or no permission \n torrent: " + torrent
                 )
 
         self.hass.services.async_register(

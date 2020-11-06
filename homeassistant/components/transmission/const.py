@@ -18,6 +18,7 @@ DEFAULT_PORT = 9091
 DEFAULT_SCAN_INTERVAL = 120
 
 ATTR_TORRENT = "torrent"
+ATTR_DOWNLOAD_DIR = "download_dir"
 SERVICE_ADD_TORRENT = "add_torrent"
 
 DATA_UPDATED = "transmission_data_updated"
